@@ -17,39 +17,21 @@ jobs:
       - checkout
       # Use root level package.json to install dependencies in the frontend app
       - run:
-          name: Install Front-End Dependencies
+          name: Install Client Dependencies
           command: |
-            echo "NODE --version" 
-            echo $(node --version)
-            echo "NPM --version" 
-            echo $(npm --version)
-            npm run frontend:install
-      # TODO: Install dependencies in the the backend API          
+            cd ./udagram/udagram-frontend && npm install --legacy-peer-deps -f
       - run:
-          name: Install API Dependencies
-          command: npm install
-      - run:
-          name: Build
-          command: npm run api:build
-      # TODO: Lint the frontend
-      - run:
-          name: Front-End Lint
+          name: Install Server Dependencies
           command: |
-            echo "TODO: Lint the frontend"
-
-      # TODO: Build the frontend app
+            cd ./udagram/udagram-api && npm install .
       - run:
           name: Front-End Build
           command: |
-            echo "TODO: Build the frontend app"
-            npm run frontend:build
-      # TODO: Build the backend API      
+            cd ./udagram/udagram-frontend && npm run build
       - run:
-          name: API Build 
+          name: API Build
           command: |
-            echo "TODO: Build the backend API"
-            npm run api:build
-      
+            cd ./udagram/udagram-api && npm run build
       - run:
           name: Install pip
           command: |
@@ -60,21 +42,6 @@ jobs:
           command: |
             sudo pip install awsebcli
             sudo pip install awscli
-      # - run:
-      #     name: Configure AWS credentials
-      #     commands: |
-      #       aws co     
-      - run:
-          name: Deploy Api
-          # TODO: Install, build, deploy in both apps
-          command: npm run api:deploy
-      - run:
-          name: Deploy Frontend
-          # TODO: Install, build, deploy in both apps
-          command: npm run frontend:deploy
-      
-
-  # deploy step will run only after manual approval
   deploy:
     docker:
       - image: "cimg/base:stable"
@@ -86,9 +53,13 @@ jobs:
       - aws-cli/setup
       - checkout
       - run:
-          name: Deploy App
-          # TODO: Install, build, deploy in both apps
-          command: npm run deploy
+          name: Deploy server
+          command: |
+            cd ./udagram/udagram-api && npm run deploy
+      - run:
+          name: Deploy client
+          command: |
+            cd ./udagram/udagram-frontend && npm run deploy
             
 workflows:
   udagram:
@@ -98,7 +69,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
           type: approval
           requires:
             - build
